@@ -148,10 +148,6 @@ select.ss:focus{outline:none;border-color:var(--p)}
 .seo-title{font-size:.72rem;font-weight:700;color:#1e40af;margin-bottom:5px}
 .seo-body{font-size:.67rem;color:#374151;line-height:1.65}
 .btn-row{display:flex;gap:8px}
-.pw-modal-box{background:#fff;border-radius:12px;width:340px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.2);overflow:hidden}
-#pwInput{width:100%;padding:10px 12px;border:2px solid var(--bd);border-radius:7px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--tx);outline:none;margin-bottom:8px}
-#pwInput:focus{border-color:var(--p)}
-#pwError{font-size:.67rem;color:#dc2626;margin-bottom:10px;display:none}
 </style>
 </head>
 <body>
@@ -274,53 +270,6 @@ select.ss:focus{outline:none;border-color:var(--p)}
       </div>
     </div>
 
-    <div class="sec adv-only" id="secText">
-      <div class="sl"><span class="sb" id="sb6">6</span> Text Overlays</div>
-      <div class="tl-list" id="textList"></div>
-      <button class="atb" id="addTextBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        Add Text Layer
-      </button>
-      <div class="tc" id="textControls">
-        <textarea class="ti" id="tContent" rows="2" placeholder="Enter text..."></textarea>
-        <div class="fg">
-          <button class="fb active" data-font="Inter,sans-serif">Inter</button>
-          <button class="fb" data-font="Georgia,serif">Georgia</button>
-          <button class="fb" data-font="'Times New Roman',serif">Times</button>
-          <button class="fb" data-font="Arial,sans-serif">Arial</button>
-          <button class="fb" data-font="Impact,sans-serif">Impact</button>
-          <button class="fb" data-font="'Courier New',monospace">Mono</button>
-        </div>
-        <div class="strow">
-          <button class="stb" id="tBoldBtn" style="font-weight:700">B</button>
-          <button class="stb" id="tItalicBtn" style="font-style:italic">I</button>
-        </div>
-        <div class="alrow">
-          <button class="alb active" data-align="left">≡ L</button>
-          <button class="alb" data-align="center">≡ C</button>
-          <button class="alb" data-align="right">≡ R</button>
-        </div>
-        <div class="sg" style="margin-bottom:6px">
-          <div class="sr">Size <span id="tSizeVal">48px</span></div>
-          <input type="range" id="tSizeSlider" min="10" max="200" value="48">
-          <div class="sr" style="margin-top:5px">Opacity <span id="tOpacityVal">100%</span></div>
-          <input type="range" id="tOpacitySlider" min="10" max="100" value="100">
-          <div class="sr" style="margin-top:5px">Shadow blur <span id="tShadowVal">4px</span></div>
-          <input type="range" id="tShadowSlider" min="0" max="30" value="4">
-          <div class="sr" style="margin-top:5px">Horizontal <span id="tXVal">50%</span></div>
-          <input type="range" id="tXSlider" min="0" max="100" value="50">
-          <div class="sr" style="margin-top:5px">Vertical <span id="tYVal">50%</span></div>
-          <input type="range" id="tYSlider" min="0" max="100" value="50">
-        </div>
-        <div class="crow">
-          <div class="cs"><input type="color" id="tColor" value="#ffffff"></div>
-          <span class="cl">Text</span>
-          <div class="cs" style="margin-left:8px"><input type="color" id="tShadowColor" value="#000000"></div>
-          <span class="cl">Shadow</span>
-        </div>
-        <button class="btn btn-g" id="tDeleteBtn" style="margin-top:6px;font-size:.68rem">✕ Remove Text Layer</button>
-      </div>
-    </div>
 
     <div class="sec adv-only" id="secMulti">
       <div class="sl"><span class="sb">★</span> Multi-Image Layout</div>
@@ -408,29 +357,12 @@ select.ss:focus{outline:none;border-color:var(--p)}
     </div>
   </div>
 </div>
-
-<!-- Password modal -->
-<div class="modal" id="pwModal">
-  <div class="pw-modal-box">
-    <div class="modal-hd" style="padding:16px 22px"><h2 style="font-size:.9rem">✦ Advanced Mode</h2><p>Enter the password to continue</p></div>
-    <div class="modal-bd" style="padding:20px">
-      <input type="password" id="pwInput" placeholder="Password">
-      <div id="pwError">Incorrect password. Please try again.</div>
-      <div class="btn-row">
-        <button id="pwCancelBtn" style="flex:1;padding:9px;background:transparent;border:1.5px solid var(--bd);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.73rem;font-weight:600;color:var(--mu);cursor:pointer">Cancel</button>
-        <button id="pwOkBtn" style="flex:2;padding:9px;background:var(--p);border:none;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.73rem;font-weight:600;color:#fff;cursor:pointer">Unlock</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <canvas id="exportCanvas" style="display:none"></canvas>
 
 <script>
 // ══════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════
-const TXT = { items:[], selId:null, nid:1 };
 const MI  = { images:[], cells:[], template:null, selIdx:null, nid:1, drag:null };
 
 const S = {
@@ -545,8 +477,6 @@ function render(){
   // 4. VIGNETTE
   if(S.vig>0) drawVig(ctx,DW,DH,S.vig,S.vigDir);
 
-  // 5. TEXT (always topmost)
-  drawText(ctx,DW,DH);
 
   // 6. CROP UI
   if(S.stage==='cropping'&&S.crop){
@@ -574,26 +504,7 @@ function drawVig(c,cw,ch,str,dir){
 // ══════════════════════════════════════════════════════════════
 // TEXT
 // ══════════════════════════════════════════════════════════════
-function drawText(c,cw,ch){
-  TXT.items.forEach(t=>{
-    if(!t.text.trim())return;
-    const bold=t.bold?'bold ':''
-    const italic=t.italic?'italic ':'';
-    const fs=Math.max(1,Math.round(t.size*(ch/1080)));
-    c.save();
-    c.globalAlpha=t.opacity/100;
-    c.font=`${italic}${bold}${fs}px ${t.font}`;
-    c.fillStyle=t.color;
-    c.textAlign=t.align;
-    c.textBaseline='middle';
-    if(t.shadowBlur>0){c.shadowColor=t.shadowColor;c.shadowBlur=t.shadowBlur*(ch/1080);}
-    const tx=cw*(t.x/100),ty=ch*(t.y/100);
-    const lines=t.text.split('\n');
-    const lh=fs*1.3;
-    lines.forEach((ln,i)=>c.fillText(ln,tx,ty+(i-(lines.length-1)/2)*lh));
-    c.restore();
-  });
-}
+
 
 // ══════════════════════════════════════════════════════════════
 // MULTI IMAGE
@@ -833,13 +744,6 @@ function getMiCell(px,py){
 // ══════════════════════════════════════════════════════════════
 // TEXT HIT
 // ══════════════════════════════════════════════════════════════
-function getTxtHit(px,py){
-  for(let i=TXT.items.length-1;i>=0;i--){
-    const t=TXT.items[i];
-    if(Math.abs(px-DW*(t.x/100))<90&&Math.abs(py-DH*(t.y/100))<35)return t;
-  }
-  return null;
-}
 
 // ══════════════════════════════════════════════════════════════
 // MOUSE
@@ -855,13 +759,6 @@ interCv.addEventListener('mousedown',e=>{
       MI.drag={ci,sx:p.x,sy:p.y,spx:MI.images[ci].panX,spy:MI.images[ci].panY,scx:MI.cells[ci].x,scy:MI.cells[ci].y};
       interCv.style.cursor='grabbing'; render(); return;
     }
-  }
-
-  // Text drag
-  const th=getTxtHit(p.x,p.y);
-  if(th){
-    S.txtDrag=true; S.txtDragSt={obj:th,sx:p.x,sy:p.y,ox:th.x,oy:th.y};
-    selText(th.id); interCv.style.cursor='grabbing'; return;
   }
 
   if(!S.img)return;
@@ -895,13 +792,6 @@ window.addEventListener('mousemove',e=>{
     syncMiPanel(); render(); return;
   }
 
-  if(S.txtDrag&&S.txtDragSt){
-    const o=S.txtDragSt;
-    o.obj.x=Math.max(0,Math.min(100,o.ox+(p.x-o.sx)/DW*100));
-    o.obj.y=Math.max(0,Math.min(100,o.oy+(p.y-o.sy)/DH*100));
-    syncTxtSliders(); render(); return;
-  }
-
   if(S.cropResize&&S.crop){
     const c=normCrop(),h=S.cropResize;
     if(h==='br')S.crop={x:c.x,y:c.y,w:p.x-c.x,h:p.y-c.y};
@@ -924,7 +814,6 @@ window.addEventListener('mousemove',e=>{
 
   // Cursor hints
   if(MI.images.length&&getMiCell(p.x,p.y)!==null){interCv.style.cursor='grab';return;}
-  if(getTxtHit(p.x,p.y)){interCv.style.cursor='grab';return;}
   if(S.stage==='place'){
     const r=fgRect(DW,DH);
     interCv.style.cursor=(r&&p.x>=r.dx&&p.x<=r.dx+r.dw&&p.y>=r.dy&&p.y<=r.dy+r.dh)?'grab':'default';
@@ -934,7 +823,6 @@ window.addEventListener('mousemove',e=>{
 window.addEventListener('mouseup',()=>{
   if(MI.drag){MI.drag=null; interCv.style.cursor='default';}
   if(S.fgDrag){S.fgDrag=false; interCv.style.cursor='grab'; setDot('d2',true);}
-  if(S.txtDrag){S.txtDrag=false; S.txtDragSt=null; interCv.style.cursor='default';}
   S.cropDrag=false; S.cropResize=null;
 });
 
@@ -1044,75 +932,12 @@ function updateExpBox(){
 // ══════════════════════════════════════════════════════════════
 // TEXT LAYERS
 // ══════════════════════════════════════════════════════════════
-document.getElementById('addTextBtn').addEventListener('click',()=>{
-  const t={id:TXT.nid++,text:'New Text',font:'Inter,sans-serif',size:48,bold:false,italic:false,color:'#ffffff',align:'left',shadowColor:'#000000',shadowBlur:4,opacity:100,x:50,y:50};
-  TXT.items.push(t); selText(t.id); buildTxtList(); render();
-});
 
-function buildTxtList(){
-  const list=document.getElementById('textList'); list.innerHTML='';
-  TXT.items.forEach(item=>{
-    const row=document.createElement('div');
-    row.className='tl-item'+(item.id===TXT.selId?' sel':'');
-    const lbl=document.createElement('span'); lbl.className='tl-lbl'; lbl.textContent=item.text||'(empty)'; row.appendChild(lbl);
-    const del=document.createElement('button'); del.className='tl-del'; del.textContent='✕';
-    del.addEventListener('click',ev=>{ev.stopPropagation();TXT.items=TXT.items.filter(t=>t.id!==item.id);if(TXT.selId===item.id){TXT.selId=TXT.items[0]?.id||null;syncTxtControls();}buildTxtList();render();});
-    row.appendChild(del);
-    row.addEventListener('click',()=>selText(item.id));
-    list.appendChild(row);
-  });
-}
 
-function selText(id){
-  TXT.selId=id; buildTxtList(); syncTxtControls();
-}
 
-function getSelTxt(){ return TXT.items.find(t=>t.id===TXT.selId); }
 
-function syncTxtControls(){
-  const t=getSelTxt();
-  const ctrl=document.getElementById('textControls');
-  ctrl.classList.toggle('vis',!!t);
-  if(!t)return;
-  document.getElementById('tContent').value=t.text;
-  document.getElementById('tSizeSlider').value=t.size;    document.getElementById('tSizeVal').textContent=t.size+'px';
-  document.getElementById('tOpacitySlider').value=t.opacity; document.getElementById('tOpacityVal').textContent=t.opacity+'%';
-  document.getElementById('tShadowSlider').value=t.shadowBlur; document.getElementById('tShadowVal').textContent=t.shadowBlur+'px';
-  document.getElementById('tXSlider').value=t.x;          document.getElementById('tXVal').textContent=t.x+'%';
-  document.getElementById('tYSlider').value=t.y;          document.getElementById('tYVal').textContent=t.y+'%';
-  document.getElementById('tColor').value=t.color;
-  document.getElementById('tShadowColor').value=t.shadowColor;
-  document.getElementById('tBoldBtn').classList.toggle('active',t.bold);
-  document.getElementById('tItalicBtn').classList.toggle('active',t.italic);
-  document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('active',b.dataset.font===t.font));
-  document.querySelectorAll('.alb').forEach(b=>b.classList.toggle('active',b.dataset.align===t.align));
-}
 
-function syncTxtSliders(){
-  const t=getSelTxt(); if(!t)return;
-  document.getElementById('tXSlider').value=Math.round(t.x); document.getElementById('tXVal').textContent=Math.round(t.x)+'%';
-  document.getElementById('tYSlider').value=Math.round(t.y); document.getElementById('tYVal').textContent=Math.round(t.y)+'%';
-}
 
-// Text control listeners
-document.getElementById('tContent').addEventListener('input',function(){const t=getSelTxt();if(!t)return;t.text=this.value;buildTxtList();render();});
-document.getElementById('tColor').addEventListener('input',function(){const t=getSelTxt();if(!t)return;t.color=this.value;render();});
-document.getElementById('tShadowColor').addEventListener('input',function(){const t=getSelTxt();if(!t)return;t.shadowColor=this.value;render();});
-document.getElementById('tBoldBtn').addEventListener('click',()=>{const t=getSelTxt();if(!t)return;t.bold=!t.bold;syncTxtControls();render();});
-document.getElementById('tItalicBtn').addEventListener('click',()=>{const t=getSelTxt();if(!t)return;t.italic=!t.italic;syncTxtControls();render();});
-document.getElementById('tDeleteBtn').addEventListener('click',()=>{const t=getSelTxt();if(!t)return;TXT.items=TXT.items.filter(x=>x.id!==t.id);TXT.selId=TXT.items[0]?.id||null;buildTxtList();syncTxtControls();render();});
-document.querySelectorAll('.fb').forEach(b=>b.addEventListener('click',()=>{const t=getSelTxt();if(!t)return;t.font=b.dataset.font;syncTxtControls();render();}));
-document.querySelectorAll('.alb').forEach(b=>b.addEventListener('click',()=>{const t=getSelTxt();if(!t)return;t.align=b.dataset.align;syncTxtControls();render();}));
-
-['tSizeSlider','tOpacitySlider','tShadowSlider','tXSlider','tYSlider'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',function(){
-    const t=getSelTxt(); if(!t)return;
-    const m={tSizeSlider:['size','tSizeVal','px'],tOpacitySlider:['opacity','tOpacityVal','%'],tShadowSlider:['shadowBlur','tShadowVal','px'],tXSlider:['x','tXVal','%'],tYSlider:['y','tYVal','%']};
-    const[p,vid,s]=m[id]; t[p]=+this.value;
-    document.getElementById(vid).textContent=Math.round(+this.value)+s;
-    render();
-  });
-});
 
 // ══════════════════════════════════════════════════════════════
 // MULTI-IMAGE UPLOAD & SLIDERS
@@ -1208,8 +1033,6 @@ function doExport(){
   drawMulti(ec,EW,EH);
   // Vignette
   if(S.vig>0) drawVig(ec,EW,EH,S.vig,S.vigDir);
-  // Text
-  drawText(ec,EW,EH);
 
   expCv.toBlob(blob=>{
     pendingBlob=blob;
@@ -1237,7 +1060,6 @@ document.getElementById('exportModal').addEventListener('click',e=>{if(e.target=
 document.getElementById('resetBtn').addEventListener('click',()=>{
   S.img=null;S.fgImg=null;S.name=null;S.fgScale=100;S.fgX=50;S.fgY=50;
   S.bgOffX=0;S.bgOffY=0;S.blur=18;S.dim=.25;S.vig=0;S.vigDir='bottom';S.crop=null;
-  TXT.items=[];TXT.selId=null;TXT.nid=1;
   MI.images=[];MI.cells=[];MI.template=null;MI.selIdx=null;MI.drag=null;
   const dflt={fgScaleSlider:100,fgXSlider:50,fgYSlider:50,bgXSlider:0,bgYSlider:0,blurSlider:18,dimSlider:25,vigSlider:0};
   Object.entries(dflt).forEach(([id,v])=>document.getElementById(id).value=v);
@@ -1256,7 +1078,6 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   resetCropBtn(); setStage('idle');
   ctx.clearRect(0,0,DW,DH); ictx.clearRect(0,0,DW,DH);
   cropBox.style.display='none'; cropBar.style.display='none';
-  buildTxtList(); syncTxtControls();
   document.getElementById('miContent').style.display='none';
   document.getElementById('miPanelCtrl').style.display='none';
   render();
@@ -1265,15 +1086,14 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
 // ══════════════════════════════════════════════════════════════
 // ADVANCED / PASSWORD
 // ══════════════════════════════════════════════════════════════
-let advOpen=false, advUnlocked=false;
+let advOpen=false;
 
 function toggleAdv(){
-  if(advOpen){ closeAdv(); return; }
-  if(advUnlocked){ openAdv(); } else { document.getElementById('pwModal').classList.add('open'); setTimeout(()=>document.getElementById('pwInput').focus(),50); }
+  if(advOpen){ closeAdv(); } else { openAdv(); }
 }
 
 function openAdv(){
-  advOpen=true; advUnlocked=true;
+  advOpen=true;
   document.body.classList.add('adv');
   const btn=document.getElementById('advBtn');
   btn.classList.add('on'); btn.textContent='✕ Simple';
@@ -1292,29 +1112,7 @@ function closeAdv(){
   setTimeout(syncSize,50);
 }
 
-document.getElementById('pwOkBtn').addEventListener('click',checkPw);
-document.getElementById('pwCancelBtn').addEventListener('click',()=>{
-  document.getElementById('pwModal').classList.remove('open');
-  document.getElementById('pwInput').value='';
-  document.getElementById('pwError').style.display='none';
-});
-document.getElementById('pwInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter')checkPw();
-  if(e.key==='Escape')document.getElementById('pwCancelBtn').click();
-});
 
-function checkPw(){
-  if(document.getElementById('pwInput').value==='1010'){
-    document.getElementById('pwModal').classList.remove('open');
-    document.getElementById('pwInput').value='';
-    document.getElementById('pwError').style.display='none';
-    openAdv();
-  } else {
-    document.getElementById('pwError').style.display='block';
-    document.getElementById('pwInput').value='';
-    document.getElementById('pwInput').focus();
-  }
-}
 
 // ══════════════════════════════════════════════════════════════
 // INIT
