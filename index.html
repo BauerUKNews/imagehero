@@ -23,15 +23,16 @@ header{display:flex;align-items:center;padding:0 20px;height:50px;background:var
 .htitle span{color:#a5f3ec}
 .hsub{font-size:.62rem;color:rgba(255,255,255,.55)}
 .hnews{margin-left:auto;font-size:.95rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase}
-#advBtn{padding:5px 13px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer}
-#advBtn.on{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.6)}
+.mode-tab{padding:5px 13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:5px;color:rgba(255,255,255,.7);font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s}
+.mode-tab:hover{background:rgba(255,255,255,.2)}
+.mode-tab.active{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.6);color:#fff}
 
 /* LAYOUT */
 .workspace{display:grid;grid-template-columns:1fr 280px;flex:1;min-height:0;overflow:hidden}
 
 /* CANVAS */
-.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;gap:8px;overflow:hidden;background:var(--bg)}
-.canvas-wrap{position:relative;width:100%;max-width:960px;aspect-ratio:16/9;background:#e2e0ec;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;user-select:none;box-shadow:0 2px 12px rgba(71,0,163,.08)}
+.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;gap:8px;overflow:hidden;background:var(--bg);width:100%;height:100%}
+.canvas-wrap{position:relative;max-width:100%;max-height:100%;aspect-ratio:16/9;transition:aspect-ratio .2s;background:#e2e0ec;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;user-select:none;box-shadow:0 2px 12px rgba(71,0,163,.08)}
 .canvas-wrap.drag-over{border-color:var(--t);box-shadow:0 0 0 2px var(--t)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #interCanvas{z-index:2}
@@ -50,18 +51,38 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .info-bar{display:flex;gap:12px;font-size:.62rem;color:var(--mu);width:100%;max-width:960px}
 .info-bar strong{color:var(--p);font-weight:600}
 
+/* HELP MODAL */
+.htab{padding:10px 18px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;color:var(--mu);cursor:pointer;transition:all .15s}
+.htab:hover{color:var(--p)}
+.htab.active{color:var(--p);border-bottom-color:var(--p)}
+.hpanel{}
+.help-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--bd)}
+.help-section:last-child{border-bottom:none;margin-bottom:0}
+.help-step{display:flex;gap:14px;align-items:flex-start}
+.help-step-num{width:26px;height:26px;border-radius:50%;background:var(--p);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.help-step-body{flex:1}
+.help-step-title{font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:5px}
+.help-step-desc{font-size:.72rem;color:#374151;line-height:1.65}
+.help-chips{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.help-chip{font-size:.68rem;color:#374151;line-height:1.5;padding:6px 10px;background:var(--p2);border:1px solid var(--bd);border-radius:6px;display:flex;align-items:flex-start;gap:6px}
+.hchip-icon{font-size:.9rem;flex-shrink:0}
+.help-btn-pill{display:inline-block;padding:2px 8px;background:var(--p2);border:1.5px solid var(--bd);border-radius:4px;font-size:.67rem;font-weight:600;color:var(--tx);white-space:nowrap}
+.hbp-teal{background:var(--teal-dim,rgba(23,181,163,.1));border-color:var(--t);color:var(--t)}
+.hbp-purple{background:var(--p);border-color:var(--p);color:#fff}
+
 /* SIDE */
 .side{border-left:1px solid var(--bd);background:var(--panel);display:flex;flex-direction:column;overflow-y:auto}
 .sec{padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
 .sec.locked{opacity:.4;pointer-events:none}
-.sec.adv-only{display:none}
-body.adv .sec.adv-only{display:block}
+.sec.multi-only{display:none}
+body.multi .sec.multi-only{display:block}
+.sec.single-only{display:block}
+body.multi .sec.single-only{display:none}
 .sl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:9px;display:flex;align-items:center;gap:5px}
 .sl::before{content:'';display:block;width:3px;height:3px;border-radius:50%;background:var(--p)}
 .sb{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--p);color:#fff;font-size:.5rem;font-weight:700;flex-shrink:0}
 .sb.done{background:var(--t)}
-.adv-inner{display:none}
-body.adv .adv-inner{display:block}
+.adv-inner{display:block}
 
 .upload-btn{width:100%;padding:9px;background:transparent;border:1.5px dashed var(--bd);border-radius:var(--r);color:var(--mu);font-family:'Inter',sans-serif;font-size:.7rem;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
 .upload-btn:hover{border-color:var(--p);color:var(--p);background:rgba(71,0,163,.04)}
@@ -162,7 +183,14 @@ select.ss:focus{outline:none;border-color:var(--p)}
       <div class="hsub">Landscape Creator · For News Teams</div>
     </div>
   </div>
-  <button id="advBtn" onclick="toggleAdv()">✦ Advanced</button>
+  <div id="modeTabs" style="display:flex;gap:4px;margin-left:8px">
+    <button class="mode-tab active" id="tabSingle" onclick="setMode('single')">Single Image</button>
+    <button class="mode-tab" id="tabMulti" onclick="setMode('multi')">Multi Image</button>
+  </div>
+  <button id="helpBtn" onclick="document.getElementById('helpModal').classList.add('open')" style="padding:5px 11px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    Help
+  </button>
   <div class="hnews">News</div>
 </header>
 
@@ -195,25 +223,35 @@ select.ss:focus{outline:none;border-color:var(--p)}
   <div class="side">
 
     <div class="sec" id="secUpload">
-      <div class="sl"><span class="sb" id="sb1">1</span> Upload Image</div>
-      <button class="upload-btn" id="uploadBtn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-        Choose Image
-      </button>
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
-    </div>
-
-    <div class="sec locked" id="secRatio">
-      <div class="sl"><span class="sb" id="sb2">2</span> Canvas Ratio</div>
-      <div class="rg">
-        <button class="rb active" data-ratio="16:9">16:9 Hero</button>
-        <button class="rb" data-ratio="21:9">21:9 Cinematic</button>
-        <button class="rb" data-ratio="3:1">3:1 Banner</button>
-        <button class="rb" data-ratio="4:3">4:3 Classic</button>
+      <div class="sl"><span class="sb" id="sb1">1</span> Upload</div>
+      <!-- Single image upload -->
+      <div id="singleUploadArea">
+        <button class="upload-btn" id="uploadBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Choose Image
+        </button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+      </div>
+      <!-- Multi image upload (shown in multi mode) -->
+      <div id="multiUploadArea" style="display:none">
+        <button class="upload-btn" id="miUploadBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Choose Images
+        </button>
+        <input type="file" id="miFileInput" accept="image/*" multiple style="display:none">
       </div>
     </div>
 
-    <div class="sec locked" id="secFg">
+    <div class="sec" id="secRatio">
+      <div class="sl"><span class="sb" id="sb2">2</span> Canvas Size</div>
+      <div class="rg" style="grid-template-columns:1fr 1fr 1fr">
+        <button class="rb active" data-ratio="16:9" data-label="Landscape">🖥 Landscape</button>
+        <button class="rb" data-ratio="9:16" data-label="Mobile">📱 Mobile</button>
+        <button class="rb" data-ratio="1:1" data-label="Square">⬛ Square</button>
+      </div>
+    </div>
+
+    <div class="sec locked single-only" id="secFg">
       <div class="sl"><span class="sb" id="sb3">3</span> Foreground</div>
       <div class="hn" id="placeHint" style="display:block;margin-bottom:8px">Drag the image on the canvas to reposition.</div>
       <div class="sg">
@@ -226,7 +264,7 @@ select.ss:focus{outline:none;border-color:var(--p)}
       </div>
     </div>
 
-    <div class="sec locked" id="secCrop">
+    <div class="sec locked single-only" id="secCrop">
       <div class="sl"><span class="sb" id="sb4">4</span> Crop <span style="text-transform:none;letter-spacing:0;font-weight:400;opacity:.55;margin-left:3px">(optional)</span></div>
       <button class="ctb" id="cropToggleBtn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 002 2h14M18 22V8a2 2 0 00-2-2H2"/></svg>
@@ -271,13 +309,8 @@ select.ss:focus{outline:none;border-color:var(--p)}
     </div>
 
 
-    <div class="sec adv-only" id="secMulti">
+<div class="sec multi-only" id="secMulti">
       <div class="sl"><span class="sb">★</span> Multi-Image Layout</div>
-      <button class="upload-btn" id="miUploadBtn" style="margin-bottom:8px">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-        Upload Multiple Images
-      </button>
-      <input type="file" id="miFileInput" accept="image/*" multiple style="display:none">
       <div id="miContent" style="display:none">
         <div class="mi-il" id="miImgList"></div>
         <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin:8px 0 5px">Layout</div>
@@ -307,7 +340,7 @@ select.ss:focus{outline:none;border-color:var(--p)}
         </div>
         <button class="btn btn-g" id="miClearBtn" style="margin-top:8px;font-size:.68rem">Clear Multi-Image</button>
       </div>
-    </div>
+    
 
     <div class="sec" id="secExport">
       <div class="sl"><span class="sb" id="sb7">7</span> Export</div>
@@ -330,6 +363,223 @@ select.ss:focus{outline:none;border-color:var(--p)}
     </div>
   </div>
 </div>
+
+<!-- Help modal -->
+<div class="modal" id="helpModal">
+  <div style="background:#fff;border-radius:12px;width:680px;max-width:95vw;max-height:90vh;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div style="background:var(--p);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#fff;">Image Hero — Help Guide</div>
+        <div style="font-size:.68rem;color:rgba(255,255,255,.6);margin-top:2px;">Everything you need to create great news images</div>
+      </div>
+      <button onclick="document.getElementById('helpModal').classList.remove('open')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.8rem;padding:6px 12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;">✕ Close</button>
+    </div>
+
+    <!-- Tab bar -->
+    <div style="display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;background:#fff;">
+      <button class="htab active" onclick="switchHelpTab('single')" id="htab-single">Single Image</button>
+      <button class="htab" onclick="switchHelpTab('multi')" id="htab-multi">Multi Image</button>
+      <button class="htab" onclick="switchHelpTab('export')" id="htab-export">Export & Tips</button>
+    </div>
+
+    <!-- Content -->
+    <div style="overflow-y:auto;flex:1;padding:24px;">
+
+      <!-- SINGLE IMAGE TAB -->
+      <div class="hpanel" id="hpanel-single">
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Choose your canvas size</div>
+              <div class="help-step-desc">Before uploading, pick the format you need.</div>
+              <div class="help-chips">
+                <div class="help-chip"><span class="hchip-icon">🖥</span><strong>Landscape</strong> 16:9 — standard news hero, exports 1920×1080px</div>
+                <div class="help-chip"><span class="hchip-icon">📱</span><strong>Mobile</strong> 9:16 — portrait for phones, exports 1080×1920px</div>
+                <div class="help-chip"><span class="hchip-icon">⬛</span><strong>Square</strong> 1:1 — social media, exports 1080×1080px</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Upload your image</div>
+              <div class="help-step-desc">Click <span class="help-btn-pill">Choose Image</span> or drag and drop a photo onto the canvas. Once uploaded the foreground and background controls unlock.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Position the foreground</div>
+              <div class="help-step-desc"><strong>Drag the image directly on the canvas</strong> to reposition it. Use the Scale slider to make it larger or smaller. Horizontal and Vertical sliders give precise control.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">4</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Crop (optional)</div>
+              <div class="help-step-desc">Click <span class="help-btn-pill">Draw Crop Area</span> then drag a rectangle on the canvas. Drag the corner handles to adjust. Click <span class="help-btn-pill hbp-teal">✓ Confirm Crop</span> to apply — this permanently trims the image.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">5</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Generate Background</div>
+              <div class="help-step-desc">Click <span class="help-btn-pill hbp-teal">Generate Background</span> to fill the canvas with a blurred, dimmed version of your image. Adjust with:</div>
+              <div class="help-chips" style="margin-top:8px">
+                <div class="help-chip"><strong>Blur</strong> — how blurry the background is</div>
+                <div class="help-chip"><strong>Dim</strong> — how dark the background overlay is</div>
+                <div class="help-chip"><strong>Pan H / Pan V</strong> — shift the background behind the foreground</div>
+                <div class="help-chip"><strong>Vignette</strong> — adds a gradient darkening to edges — great for text legibility. Choose Bottom to darken the bottom of the image.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MULTI IMAGE TAB -->
+      <div class="hpanel" id="hpanel-multi" style="display:none">
+
+        <div class="help-section">
+          <div class="help-step-body">
+            <div class="help-step-title">Switching to Multi Image mode</div>
+            <div class="help-step-desc">Click <span class="help-btn-pill">Multi Image</span> in the top bar. The upload section changes to accept multiple files at once.</div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Upload multiple images</div>
+              <div class="help-step-desc">Click <span class="help-btn-pill">Choose Images</span> and select 2 or more photos. You can also add more later. Images appear in a list with thumbnails.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Choose a layout</div>
+              <div class="help-step-desc">Layout options appear automatically based on how many images you've uploaded. The mini preview shows how the canvas will be divided.</div>
+              <div class="help-chips" style="margin-top:8px">
+                <div class="help-chip"><strong>2 images:</strong> BG + Circle overlay, Side by Side, Top &amp; Bottom, Big Left/Right</div>
+                <div class="help-chip"><strong>3 images:</strong> Stacked, Thirds, Big+Two, Two+Big, Big Top</div>
+                <div class="help-chip"><strong>4 images:</strong> Stacked, Quarters, Four Across, Big+3 combos</div>
+                <div class="help-chip"><strong>5+ images:</strong> Stacked strips or auto grid</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Reorder images</div>
+              <div class="help-step-desc">Each image in the list has <strong>▲ ▼ buttons</strong> — click to move it up or down in the order. You can also <strong>click and drag</strong> any row to a new position. The canvas updates instantly.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">4</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Adjust each panel</div>
+              <div class="help-step-desc"><strong>Click a panel on the canvas</strong> (or click its row in the list) to select it. Then:</div>
+              <div class="help-chips" style="margin-top:8px">
+                <div class="help-chip"><strong>Drag</strong> — pan the image within its panel</div>
+                <div class="help-chip"><strong>Shift + Drag</strong> — drag up to zoom in, drag down to zoom out</div>
+                <div class="help-chip"><strong>Zoom / Pan sliders</strong> — fine control in the Selected Panel section</div>
+              </div>
+              <div class="help-step-desc" style="margin-top:8px">For circle overlays, extra <strong>Circle Size &amp; Position</strong> sliders appear so you can resize and move the circle anywhere on the canvas.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">5</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Background &amp; Vignette</div>
+              <div class="help-step-desc">The Background section works the same as in Single Image mode. Add a vignette to darken the edges — useful when text will be placed over the image.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- EXPORT TAB -->
+      <div class="hpanel" id="hpanel-export" style="display:none">
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Export your image</div>
+              <div class="help-step-desc">Click <span class="help-btn-pill hbp-purple">↓ Export HD Image</span> at any time — you don't need to complete every step first. A naming dialog will appear.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Name your file — SEO matters</div>
+              <div class="help-step-desc">You must name the file before downloading. Search engines read image filenames, so use descriptive, hyphenated keywords.</div>
+              <div class="help-chips" style="margin-top:8px">
+                <div class="help-chip" style="border-color:#166534;background:#f0fdf4"><span style="color:#166534;font-weight:700">✓ Good:</span> <code>rishi-sunak-budget-press-conference.jpg</code></div>
+                <div class="help-chip" style="border-color:#991b1b;background:#fef2f2"><span style="color:#991b1b;font-weight:700">✗ Avoid:</span> <code>IMG_4821.jpg</code> or <code>hero image.jpg</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-body">
+              <div class="help-step-title">Export sizes</div>
+              <div class="help-chips">
+                <div class="help-chip"><span class="hchip-icon">🖥</span><strong>Landscape</strong> — 1920 × 1080 px, JPEG 92%</div>
+                <div class="help-chip"><span class="hchip-icon">📱</span><strong>Mobile</strong> — 1080 × 1920 px, JPEG 92%</div>
+                <div class="help-chip"><span class="hchip-icon">⬛</span><strong>Square</strong> — 1080 × 1080 px, JPEG 92%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <div class="help-step-body">
+            <div class="help-step-title">Reset</div>
+            <div class="help-step-desc">Click <span class="help-btn-pill">✕ Reset</span> to clear everything and start again. Canvas size goes back to Landscape.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Export modal -->
 <div class="modal" id="exportModal">
@@ -364,6 +614,7 @@ select.ss:focus{outline:none;border-color:var(--p)}
 // STATE
 // ══════════════════════════════════════════════════════════════
 const MI  = { images:[], cells:[], template:null, selIdx:null, nid:1, drag:null };
+let appMode = 'single'; // 'single' | 'multi'
 
 const S = {
   img:null, fgImg:null, name:null, ratio:'16:9',
@@ -373,7 +624,6 @@ const S = {
   stage:'idle',
   crop:null, cropDrag:false, cropStart:null, cropResize:null,
   fgDrag:false, fgDragSt:null,
-  txtDrag:false, txtDragSt:null,
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -394,6 +644,26 @@ let DW=0, DH=0;
 // RESIZE
 // ══════════════════════════════════════════════════════════════
 function syncSize(){
+  const [rw,rh]=ratioWH();
+  wrap.style.aspectRatio = rw+'/'+rh;
+  // Reset constraints so we can measure available space
+  wrap.style.width = '';
+  wrap.style.height = '';
+  const area = wrap.parentElement.getBoundingClientRect();
+  const availW = area.width  - 32; // padding
+  const availH = area.height - 48; // padding + info-bar
+  // Fit the canvas within available space maintaining aspect ratio
+  const scaleByW = availW;
+  const scaleByH = availH * (rw/rh);
+  if(scaleByH <= scaleByW){
+    // Height is the constraint
+    wrap.style.height = availH + 'px';
+    wrap.style.width  = (availH * rw/rh) + 'px';
+  } else {
+    // Width is the constraint
+    wrap.style.width  = availW + 'px';
+    wrap.style.height = (availW * rh/rw) + 'px';
+  }
   const r=wrap.getBoundingClientRect();
   DW=Math.round(r.width); DH=Math.round(r.height);
   mainCv.width=DW; mainCv.height=DH;
@@ -405,7 +675,23 @@ new ResizeObserver(syncSize).observe(wrap);
 // ══════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════
-function ratioWH(){ return({'16:9':[16,9],'21:9':[21,9],'3:1':[3,1],'4:3':[4,3]})[S.ratio]||[16,9]; }
+function ratioWH(){ return({'16:9':[16,9],'9:16':[9,16],'1:1':[1,1]})[S.ratio]||[16,9]; }
+
+function setMode(mode){
+  appMode = mode;
+  document.body.classList.toggle('multi', mode === 'multi');
+  document.getElementById('tabSingle').classList.toggle('active', mode === 'single');
+  document.getElementById('tabMulti').classList.toggle('active', mode === 'multi');
+  // Swap upload area
+  document.getElementById('singleUploadArea').style.display = mode === 'single' ? 'block' : 'none';
+  document.getElementById('multiUploadArea').style.display  = mode === 'multi'  ? 'block' : 'none';
+  // In multi mode unlock secMulti immediately
+  if(mode === 'multi'){
+    document.getElementById('secMulti').classList.remove('locked');
+    document.getElementById('secBg').classList.remove('locked');
+  }
+  syncSize();
+}
 
 function coverFit(img,dw,dh,ox=0,oy=0){
   const ia=img.width/img.height, da=dw/dh;
@@ -583,12 +869,14 @@ function miTemplates(n){
     {id:'br',l:'Big Right',   c:[{x:0,y:0,w:.4,h:1},{x:.4,y:0,w:.6,h:1}]},
   ];
   if(n===3)return[
+    {id:'vs3',l:'Stacked',    c:[{x:0,y:0,w:1,h:.333},{x:0,y:.333,w:1,h:.334},{x:0,y:.667,w:1,h:.333}]},
     {id:'t3',l:'Thirds',      c:[{x:0,y:0,w:.333,h:1},{x:.333,y:0,w:.334,h:1},{x:.667,y:0,w:.333,h:1}]},
     {id:'bl3',l:'Big+Two',    c:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
     {id:'br3',l:'Two+Big',    c:[{x:0,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:0,w:.5,h:1}]},
     {id:'bt3',l:'Big Top',    c:[{x:0,y:0,w:1,h:.55},{x:0,y:.55,w:.5,h:.45},{x:.5,y:.55,w:.5,h:.45}]},
   ];
   if(n===4)return[
+    {id:'vs4',l:'Stacked',    c:[{x:0,y:0,w:1,h:.25},{x:0,y:.25,w:1,h:.25},{x:0,y:.5,w:1,h:.25},{x:0,y:.75,w:1,h:.25}]},
     {id:'q4',l:'Quarters',    c:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
     {id:'r4',l:'Four Across', c:[{x:0,y:0,w:.25,h:1},{x:.25,y:0,w:.25,h:1},{x:.5,y:0,w:.25,h:1},{x:.75,y:0,w:.25,h:1}]},
     {id:'bt4',l:'Big+3 Below',c:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:.333,h:.5},{x:.333,y:.5,w:.334,h:.5},{x:.667,y:.5,w:.333,h:.5}]},
@@ -597,7 +885,12 @@ function miTemplates(n){
   const cols=Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
   const cells=[];
   for(let i=0;i<n;i++)cells.push({x:(i%cols)/cols,y:Math.floor(i/cols)/rows,w:1/cols,h:1/rows});
-  return[{id:'auto',l:`${cols}×${rows} Grid`,c:cells}];
+  const h=parseFloat((1/n).toFixed(4));
+  const stackCells=Array.from({length:n},(_,i)=>({x:0,y:parseFloat((i*h).toFixed(4)),w:1,h}));
+  return[
+    {id:'vsn',l:'Stacked', c:stackCells},
+    {id:'auto',l:`${cols}×${rows} Grid`,c:cells}
+  ];
 }
 
 
@@ -619,60 +912,115 @@ function applyDefaultZoom(cells, images){
     img.zoom = cells[i] ? coverZoomForCell(cells[i], img) : 100;
   });
 }
+
+
 function buildMiUI(){
   const n=MI.images.length;
   const content=document.getElementById('miContent');
   if(n<2){content.style.display='none';return;}
   content.style.display='block';
-  // Image list
+  // Image list with move up/down buttons + drag-to-reorder
   const list=document.getElementById('miImgList'); list.innerHTML='';
+  let listDragSrc=null;
   MI.images.forEach((img,i)=>{
-    const row=document.createElement('div'); row.className='mi-ii'+(MI.selIdx===i?' sel':'');
-    // Cell role label (which template position this image fills)
-    const roleLabel=document.createElement('span');
-    roleLabel.style.cssText='font-size:.55rem;font-weight:700;color:var(--mu);background:var(--bd);border-radius:3px;padding:1px 5px;flex-shrink:0;';
-    const cell=MI.cells[i];
-    const isCircle=cell&&cell.shape==='circle';
-    roleLabel.textContent=isCircle?'●':'BG';
-    row.appendChild(roleLabel);
-    const th=document.createElement('canvas'); th.className='mi-th'; th.width=64; th.height=64;
-    const tc=th.getContext('2d'); const ar=img.img.width/img.img.height;
-    let tw=64,tt=64; if(ar>1)tt=64/ar; else tw=64*ar;
-    tc.drawImage(img.img,(64-tw)/2,(64-tt)/2,tw,tt);
-    row.appendChild(th);
-    const nm=document.createElement('span'); nm.className='mi-nm'; nm.textContent=img.name; row.appendChild(nm);
-    const dl=document.createElement('button'); dl.className='mi-dl'; dl.textContent='✕';
-    dl.addEventListener('click',ev=>{ev.stopPropagation();MI.images.splice(i,1);if(MI.selIdx>=MI.images.length)MI.selIdx=null;buildMiUI();render();});
-    row.appendChild(dl);
-    row.addEventListener('click',()=>{MI.selIdx=i;buildMiUI();syncMiPanel();render();});
-    list.appendChild(row);
-  });
-  // Swap button (only show for 2-image circle layouts)
-  const hasCircle=MI.cells.some(c=>c.shape==='circle');
-  if(MI.images.length===2&&hasCircle){
-    const swapRow=document.createElement('div');
-    swapRow.style.cssText='margin-top:4px;';
-    const swapBtn=document.createElement('button');
-    swapBtn.style.cssText='width:100%;padding:6px;background:transparent;border:1.5px dashed var(--bd);border-radius:var(--r);color:var(--mu);font-family:Inter,sans-serif;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;';
-    swapBtn.innerHTML='⇄ Swap images (BG ↔ Circle)';
-    swapBtn.onmouseover=function(){this.style.borderColor='var(--p)';this.style.color='var(--p)';};
-    swapBtn.onmouseout=function(){this.style.borderColor='var(--bd)';this.style.color='var(--mu)';};
-    swapBtn.addEventListener('click',()=>{
-      // Swap the two images
-      [MI.images[0],MI.images[1]]=[MI.images[1],MI.images[0]];
-      // Reset pan/zoom for both
+    const n=MI.images.length;
+    const row=document.createElement('div');
+    row.className='mi-ii'+(MI.selIdx===i?' sel':'');
+    row.draggable=true;
+    row.style.cursor='grab';
+
+    row.addEventListener('dragstart',e=>{
+      listDragSrc=i;
+      e.dataTransfer.effectAllowed='move';
+      setTimeout(()=>{ row.style.opacity='.4'; row.style.cursor='grabbing'; },0);
+    });
+    row.addEventListener('dragend',()=>{
+      row.style.opacity='1'; row.style.cursor='grab';
+      list.querySelectorAll('.mi-ii').forEach(r=>{ r.style.outline=''; r.style.background=''; });
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      if(listDragSrc!==null && listDragSrc!==i)
+        row.style.outline='2px solid var(--p)';
+    });
+    row.addEventListener('dragleave',()=>{ row.style.outline=''; });
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      row.style.outline='';
+      if(listDragSrc===null || listDragSrc===i){ listDragSrc=null; return; }
+      // Swap images
+      [MI.images[listDragSrc],MI.images[i]]=[MI.images[i],MI.images[listDragSrc]];
       applyDefaultZoom(MI.cells,MI.images);
-      MI.selIdx=null;
+      if(MI.selIdx===listDragSrc) MI.selIdx=i;
+      else if(MI.selIdx===i) MI.selIdx=listDragSrc;
+      listDragSrc=null;
       buildMiUI(); syncMiPanel(); render();
     });
-    swapRow.appendChild(swapBtn);
-    list.appendChild(swapRow);
-  }
+
+    // Thumbnail - use img element to avoid stray canvas rendering
+    const th=document.createElement('canvas'); th.className='mi-th'; th.width=32; th.height=32;
+    row.appendChild(th); // append FIRST, then draw
+    const tc=th.getContext('2d'); const ar=img.img.width/img.img.height;
+    let tw=32,tt=32; if(ar>1)tt=32/ar; else tw=32*ar;
+    tc.drawImage(img.img,(32-tw)/2,(32-tt)/2,tw,tt);
+
+    // Slot label
+    const cell=MI.cells[i];
+    const roleLabel=document.createElement('span');
+    roleLabel.style.cssText='font-size:.6rem;font-weight:700;color:var(--p);background:rgba(71,0,163,.1);border-radius:3px;padding:2px 6px;flex-shrink:0;min-width:22px;text-align:center;';
+    roleLabel.textContent=cell?.shape==='circle'?'●':(i+1);
+    row.appendChild(roleLabel);
+
+    // Filename
+    const nm=document.createElement('span'); nm.className='mi-nm'; nm.textContent=img.name;
+    row.appendChild(nm);
+
+    // Move up/down buttons
+    const moveWrap=document.createElement('div');
+    moveWrap.style.cssText='display:flex;flex-direction:column;gap:1px;flex-shrink:0;';
+    moveWrap.addEventListener('click',ev=>ev.stopPropagation());
+    moveWrap.addEventListener('dragstart',ev=>ev.stopPropagation());
+
+    const mkBtn=(label,enabled,fn)=>{
+      const b=document.createElement('button');
+      b.textContent=label;
+      b.style.cssText='border:none;background:none;cursor:'+(enabled?'pointer':'default')+';color:'+(enabled?'var(--p)':'var(--bd)')+';font-size:.6rem;padding:1px 3px;line-height:1;';
+      if(enabled) b.addEventListener('click',fn);
+      return b;
+    };
+
+    const ii=i;
+    moveWrap.appendChild(mkBtn('▲', i>0, ()=>{
+      [MI.images[ii-1],MI.images[ii]]=[MI.images[ii],MI.images[ii-1]];
+      applyDefaultZoom(MI.cells,MI.images);
+      if(MI.selIdx===ii) MI.selIdx=ii-1;
+      else if(MI.selIdx===ii-1) MI.selIdx=ii;
+      buildMiUI(); syncMiPanel(); render();
+    }));
+    moveWrap.appendChild(mkBtn('▼', i<n-1, ()=>{
+      [MI.images[ii],MI.images[ii+1]]=[MI.images[ii+1],MI.images[ii]];
+      applyDefaultZoom(MI.cells,MI.images);
+      if(MI.selIdx===ii) MI.selIdx=ii+1;
+      else if(MI.selIdx===ii+1) MI.selIdx=ii;
+      buildMiUI(); syncMiPanel(); render();
+    }));
+    row.appendChild(moveWrap);
+
+    // Delete
+    const dl=document.createElement('button'); dl.className='mi-dl'; dl.textContent='✕';
+    dl.addEventListener('click',ev=>{ev.stopPropagation();MI.images.splice(ii,1);if(MI.selIdx>=MI.images.length)MI.selIdx=null;buildMiUI();render();});
+    row.appendChild(dl);
+
+    row.addEventListener('click',()=>{MI.selIdx=ii;buildMiUI();syncMiPanel();render();});
+    list.appendChild(row);
+  });
+
   // Templates
   const tmpls=miTemplates(n);
   const grid=document.getElementById('miTemplateGrid'); grid.innerHTML='';
   if(!MI.template||!tmpls.find(t=>t.id===MI.template)){
     MI.template=tmpls[0].id; MI.cells=tmpls[0].c;
+    MI.images.forEach((img,i)=>{img.slot=i;});
     applyDefaultZoom(MI.cells,MI.images);
   }
   tmpls.forEach(tmpl=>{
@@ -689,6 +1037,7 @@ function buildMiUI(){
     const lbl=document.createElement('div'); lbl.className='mi-lbl'; lbl.textContent=tmpl.l; btn.appendChild(lbl);
     btn.addEventListener('click',()=>{
       MI.template=tmpl.id; MI.cells=tmpl.c;
+      MI.images.forEach((img,i)=>{img.slot=i;});
       applyDefaultZoom(MI.cells,MI.images);
       MI.selIdx=null;
       document.getElementById('miPanelCtrl').style.display='none';
@@ -756,7 +1105,7 @@ interCv.addEventListener('mousedown',e=>{
     const ci=getMiCell(p.x,p.y);
     if(ci!==null){
       MI.selIdx=ci; buildMiUI(); syncMiPanel();
-      MI.drag={ci,sx:p.x,sy:p.y,spx:MI.images[ci].panX,spy:MI.images[ci].panY,scx:MI.cells[ci].x,scy:MI.cells[ci].y};
+      MI.drag={ci,sx:p.x,sy:p.y,spx:MI.images[ci].panX,spy:MI.images[ci].panY,scx:MI.cells[ci].x,scy:MI.cells[ci].y,szoom:MI.images[ci].zoom};
       interCv.style.cursor='grabbing'; render(); return;
     }
   }
@@ -773,12 +1122,19 @@ interCv.addEventListener('mousedown',e=>{
   }
 });
 
+let _lastMouseY=0;
 window.addEventListener('mousemove',e=>{
-  const p=cpos(e);
+  const p=cpos(e); _lastMouseY=p.y;
 
   if(MI.drag){
     const img=MI.images[MI.drag.ci]; if(!img){MI.drag=null;return;}
     const cell=MI.cells[MI.drag.ci];
+    if(e.shiftKey){
+      // Shift+drag = zoom: vertical drag controls zoom
+      const dy=p.y-MI.drag.sy;
+      img.zoom=Math.max(20,Math.min(300,MI.drag.szoom - dy*0.5));
+      syncMiPanel(); render(); return;
+    }
     if(cell.shape==='circle'){
       // Move the circle: update cell.x/y
       const newX=Math.max(-cell.w*.7,Math.min(1-cell.w*.3, MI.drag.scx+(p.x-MI.drag.sx)/DW));
@@ -813,7 +1169,7 @@ window.addEventListener('mousemove',e=>{
   }
 
   // Cursor hints
-  if(MI.images.length&&getMiCell(p.x,p.y)!==null){interCv.style.cursor='grab';return;}
+  if(MI.images.length&&getMiCell(p.x,p.y)!==null){interCv.style.cursor=e.shiftKey?'ns-resize':'grab';return;}
   if(S.stage==='place'){
     const r=fgRect(DW,DH);
     interCv.style.cursor=(r&&p.x>=r.dx&&p.x<=r.dx+r.dw&&p.y>=r.dy&&p.y<=r.dy+r.dh)?'grab':'default';
@@ -881,7 +1237,7 @@ function loadFile(file){
     dropHint.classList.add('hidden');
     document.getElementById('selInfo').innerHTML=`Image: <strong>${img.width}×${img.height}px</strong>`;
     setStage('place');
-    ['secRatio','secFg','secBg','secCrop'].forEach(id=>document.getElementById(id).classList.remove('locked'));
+    ['secFg','secBg','secCrop','secMulti'].forEach(id=>document.getElementById(id).classList.remove('locked'));
     document.getElementById('genBgBtn').disabled=false;
     ['sb1','sb2','sb3','sb5'].forEach(id=>{ const e=document.getElementById(id); if(e)e.classList.add('done'); });
     setDot('d1',true); updateExpBox(); render();
@@ -912,7 +1268,7 @@ function syncFgSliders(){
 // Ratio
 document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); S.ratio=b.dataset.ratio; updateExpBox(); render();
+  b.classList.add('active'); S.ratio=b.dataset.ratio; updateExpBox(); syncSize();
 }));
 
 // Generate BG
@@ -924,7 +1280,10 @@ document.getElementById('genBgBtn').addEventListener('click',()=>{
 });
 
 function updateExpBox(){
-  const [rw,rh]=ratioWH(); const EW=1920,EH=Math.round(1920*rh/rw);
+  const [rw,rh]=ratioWH();
+  // For portrait/square, base on height 1080; for landscape base on width 1920
+  const EW = rw>=rh ? 1920 : Math.round(1080*rw/rh);
+  const EH = rw>=rh ? Math.round(1920*rh/rw) : 1080;
   document.getElementById('exportBox').innerHTML=`Output: <strong>${EW}×${EH}</strong> px<br>Format: <strong>JPEG</strong> · 92% Quality`;
   document.getElementById('outInfo').innerHTML=`Export: <strong>${EW}×${EH}px</strong>`;
 }
@@ -1012,7 +1371,7 @@ let pendingBlob=null;
 document.getElementById('exportBtn').addEventListener('click',doExport);
 
 function doExport(){
-  const[rw,rh]=ratioWH(); const EW=1920,EH=Math.round(1920*rh/rw);
+  const[rw,rh]=ratioWH(); const EW=rw>=rh?1920:Math.round(1080*rw/rh); const EH=rw>=rh?Math.round(1920*rh/rw):1080;
   expCv.width=EW; expCv.height=EH;
   const ec=expCv.getContext('2d');
   // BG
@@ -1067,7 +1426,7 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   ['bgXVal','bgYVal'].forEach(id=>document.getElementById(id).textContent='0%');
   document.getElementById('blurVal').textContent='18px'; document.getElementById('dimVal').textContent='25%';
   document.getElementById('vigVal').textContent='0%'; document.getElementById('vigDir').value='bottom';
-  ['secRatio','secFg','secBg','secCrop'].forEach(id=>document.getElementById(id).classList.add('locked'));
+  ['secFg','secBg','secCrop'].forEach(id=>document.getElementById(id).classList.add('locked'));
   for(let i=1;i<=7;i++){const e=document.getElementById('sb'+i);if(e){e.className='sb';e.textContent=i;}}
   [1,2,3,4].forEach(i=>setDot('d'+i,false));
   document.getElementById('genBgBtn').disabled=true;
@@ -1086,37 +1445,26 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
 // ══════════════════════════════════════════════════════════════
 // ADVANCED / PASSWORD
 // ══════════════════════════════════════════════════════════════
-let advOpen=false;
-
-function toggleAdv(){
-  if(advOpen){ closeAdv(); } else { openAdv(); }
-}
-
-function openAdv(){
-  advOpen=true;
-  document.body.classList.add('adv');
-  const btn=document.getElementById('advBtn');
-  btn.classList.add('on'); btn.textContent='✕ Simple';
-  // Unlock bg section so vignette is accessible without a main image
-  document.getElementById('secBg').classList.remove('locked');
-  setTimeout(syncSize,50);
-}
-
-function closeAdv(){
-  advOpen=false;
-  document.body.classList.remove('adv');
-  const btn=document.getElementById('advBtn');
-  btn.classList.remove('on'); btn.textContent='✦ Advanced';
-  // Re-lock bg if no image loaded
-  if(!S.img) document.getElementById('secBg').classList.add('locked');
-  setTimeout(syncSize,50);
-}
+// mode switching handled by setMode()
 
 
 
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
+
+function switchHelpTab(tab){
+  ['single','multi','export'].forEach(t=>{
+    document.getElementById('htab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('hpanel-'+t).style.display=t===tab?'block':'none';
+  });
+}
+
+document.getElementById('helpModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('helpModal'))
+    document.getElementById('helpModal').classList.remove('open');
+});
+
 syncSize();
 </script>
 </body>
