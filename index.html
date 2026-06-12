@@ -71,7 +71,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hbp-purple{background:var(--p);border-color:var(--p);color:#fff}
 
 /* SIDE */
-.side{border-left:1px solid var(--bd);background:var(--panel);display:flex;flex-direction:column;overflow-y:auto}
+.side{border-left:1px solid var(--bd);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.side-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 .sec{padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
 .sec.locked{opacity:.4;pointer-events:none}
 .sec.multi-only{display:none}
@@ -221,6 +222,7 @@ select.ss:focus{outline:none;border-color:var(--p)}
 
   <!-- SIDE PANEL -->
   <div class="side">
+    <div class="side-scroll">
 
     <div class="sec" id="secUpload">
       <div class="sl"><span class="sb" id="sb1">1</span> Upload</div>
@@ -342,16 +344,6 @@ select.ss:focus{outline:none;border-color:var(--p)}
       </div>
     
 
-    <div class="sec" id="secExport">
-      <div class="sl"><span class="sb" id="sb7">7</span> Export</div>
-      <div class="eb" id="exportBox">Output: <strong>1920 × 1080</strong> px<br>Format: <strong>JPEG</strong> · 92% Quality</div>
-      <button class="btn btn-p" id="exportBtn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Export HD Image
-      </button>
-      <button class="btn btn-g" id="resetBtn">✕ Reset</button>
-    </div>
-
     <div class="sec" style="margin-top:auto">
       <div class="sl">Status</div>
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -361,10 +353,22 @@ select.ss:focus{outline:none;border-color:var(--p)}
         <div style="display:flex;align-items:center;gap:7px;font-size:.63rem;color:var(--mu)"><span class="dot" id="d4"></span>Ready to export</div>
       </div>
     </div>
+    </div>
+
+        <div class="sec" id="secExport" style="border-top:2px solid var(--bd);flex-shrink:0">
+      <div class="sl"><span class="sb" id="sb7">7</span> Export</div>
+      <div class="eb" id="exportBox">Output: <strong>1920 × 1080</strong> px<br>Format: <strong>JPEG</strong> · 92% Quality</div>
+      <button class="btn btn-p" id="exportBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export HD Image
+      </button>
+      <button class="btn btn-g" id="resetBtn">✕ Reset</button>
+    </div>
+
   </div>
 </div>
 
-<!-- Help modal -->
+<!-- Help modal<!-- Help modal -->
 <div class="modal" id="helpModal">
   <div style="background:#fff;border-radius:12px;width:680px;max-width:95vw;max-height:90vh;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;">
 
