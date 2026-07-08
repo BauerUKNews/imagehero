@@ -70,6 +70,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hbp-teal{background:var(--teal-dim,rgba(23,181,163,.1));border-color:var(--t);color:var(--t)}
 .hbp-purple{background:var(--p);border-color:var(--p);color:#fff}
 
+/* COLLAPSIBLE SECTION */
+.sec-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+.sec-toggle .sl { margin-bottom:0; }
+.sec-arrow { font-size:.7rem; color:var(--mu); transition:transform .2s; }
+.sec-body { display:none; margin-top:10px; }
+.sec-body.open { display:block; }
+.sec-toggle.open .sec-arrow { transform:rotate(180deg); }
+
 /* SIDE */
 .side{border-left:1px solid var(--bd);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
 .side-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column}
@@ -273,6 +281,38 @@ select.ss:focus{outline:none;border-color:var(--p)}
         Draw Crop Area
       </button>
       <div class="hn" id="cropHint">Draw on canvas to select area. Confirm when done.</div>
+    </div>
+
+
+    <div class="sec locked" id="secBlur">
+      <div class="sec-toggle" id="blurToggle" onclick="toggleBlurSection()">
+        <div class="sl" style="margin-bottom:0"><span class="sb" id="sbBlur">✦</span> Blur Faces &amp; Plates</div>
+        <span class="sec-arrow" id="blurArrow">▾</span>
+      </div>
+      <div class="sec-body" id="blurBody">
+        <div style="font-size:.63rem;color:var(--mu);margin-bottom:8px;line-height:1.5">Choose a tool. Click to select, drag to move, drag handle to resize, Shift+drag handle to rotate. Lock 🔒 to pin to photo.</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <button class="ctb" id="blurFaceBtn">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+            Blur a Face
+          </button>
+          <button class="ctb" id="blurPlateBtn">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 12h4M14 12h4"/></svg>
+            Blur a Number Plate
+          </button>
+          <button class="ctb" id="blurRectBtn">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Freehand Area
+          </button>
+        </div>
+        <div class="hn" id="blurHint" style="display:none;margin-top:8px"></div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+          <div class="sr" style="margin-top:2px">Blur strength <span id="blurStrengthVal">12</span></div>
+          <input type="range" id="blurStrengthSlider" min="4" max="40" value="12">
+        </div>
+        <div class="tl-list" id="blurList" style="margin-top:8px"></div>
+        <button class="btn btn-g" id="blurClearBtn" style="margin-top:4px;font-size:.68rem;display:none">✕ Clear All Blurs</button>
+      </div>
     </div>
 
     <div class="sec locked" id="secBg">
@@ -674,7 +714,11 @@ function syncSize(){
   interCv.width=DW; interCv.height=DH;
   render();
 }
-new ResizeObserver(syncSize).observe(wrap);
+let _syncTimer=null;
+new ResizeObserver(()=>{
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(syncSize,50);
+}).observe(wrap);
 
 // ══════════════════════════════════════════════════════════════
 // HELPERS
@@ -693,6 +737,7 @@ function setMode(mode){
   if(mode === 'multi'){
     document.getElementById('secMulti').classList.remove('locked');
     document.getElementById('secBg').classList.remove('locked');
+    document.getElementById('secBlur').classList.remove('locked');
   }
   syncSize();
 }
@@ -767,6 +812,11 @@ function render(){
   // 4. VIGNETTE
   if(S.vig>0) drawVig(ctx,DW,DH,S.vig,S.vigDir);
 
+
+  // 5b. BLUR regions (drawn over everything, after all images)
+  updateLockedBlurs();
+  renderBlurRegions(ctx);
+  renderBlurUI();
 
   // 6. CROP UI
   if(S.stage==='cropping'&&S.crop){
@@ -1173,6 +1223,18 @@ window.addEventListener('mousemove',e=>{
   }
 
   // Cursor hints
+  if(!BLUR.mode){
+    // Resize handle on selected unlocked region
+    if(BLUR.selIdx!==null && BLUR.regions[BLUR.selIdx] && !BLUR.regions[BLUR.selIdx].locked){
+      const hp=blurHandlePos(BLUR.regions[BLUR.selIdx]);
+      if(distTo(p.x,p.y,hp.x,hp.y)<10){ interCv.style.cursor=e.shiftKey?'grab':'nwse-resize'; return; }
+    }
+    const hoverBlurIdx=getBlurRegionAt(p.x,p.y);
+    if(hoverBlurIdx!==null){
+      interCv.style.cursor=BLUR.regions[hoverBlurIdx].locked?'not-allowed':'move';
+      return;
+    }
+  }
   if(MI.images.length&&getMiCell(p.x,p.y)!==null){interCv.style.cursor=e.shiftKey?'ns-resize':'grab';return;}
   if(S.stage==='place'){
     const r=fgRect(DW,DH);
@@ -1241,7 +1303,7 @@ function loadFile(file){
     dropHint.classList.add('hidden');
     document.getElementById('selInfo').innerHTML=`Image: <strong>${img.width}×${img.height}px</strong>`;
     setStage('place');
-    ['secFg','secBg','secCrop','secMulti'].forEach(id=>document.getElementById(id).classList.remove('locked'));
+    ['secFg','secBg','secCrop','secMulti','secBlur'].forEach(id=>document.getElementById(id).classList.remove('locked'));
     document.getElementById('genBgBtn').disabled=false;
     ['sb1','sb2','sb3','sb5'].forEach(id=>{ const e=document.getElementById(id); if(e)e.classList.add('done'); });
     setDot('d1',true); updateExpBox(); render();
@@ -1394,6 +1456,13 @@ function doExport(){
   }
   // Multi
   drawMulti(ec,EW,EH);
+  // Blur regions at export resolution
+  const scaleX=EW/DW, scaleY=EH/DH;
+  const expStrength=Math.round(BLUR.strength*((scaleX+scaleY)/2));
+  BLUR.regions.forEach(r=>{
+    const er={type:r.type, cx:r.cx*scaleX, cy:r.cy*scaleY, w:r.w*scaleX, h:r.h*scaleY, angle:r.angle};
+    blurApply(ec, er, expStrength);
+  });
   // Vignette
   if(S.vig>0) drawVig(ec,EW,EH,S.vig,S.vigDir);
 
@@ -1430,7 +1499,7 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   ['bgXVal','bgYVal'].forEach(id=>document.getElementById(id).textContent='0%');
   document.getElementById('blurVal').textContent='18px'; document.getElementById('dimVal').textContent='25%';
   document.getElementById('vigVal').textContent='0%'; document.getElementById('vigDir').value='bottom';
-  ['secFg','secBg','secCrop'].forEach(id=>document.getElementById(id).classList.add('locked'));
+  ['secFg','secBg','secCrop','secBlur'].forEach(id=>document.getElementById(id).classList.add('locked'));
   for(let i=1;i<=7;i++){const e=document.getElementById('sb'+i);if(e){e.className='sb';e.textContent=i;}}
   [1,2,3,4].forEach(i=>setDot('d'+i,false));
   document.getElementById('genBgBtn').disabled=true;
@@ -1469,6 +1538,546 @@ document.getElementById('helpModal').addEventListener('click',e=>{
     document.getElementById('helpModal').classList.remove('open');
 });
 
+
+// ══════════════════════════════════════════════════════════════
+// BLUR TOOL — faces (oval) and number plates (rotated rect) and freehand
+// ══════════════════════════════════════════════════════════════
+const BLUR = {
+  regions: [],     // [{type, cx,cy,w,h,angle, locked, selected}]
+  mode: null,      // null | 'face' | 'plate' | 'rect'
+  clickStage: 0,
+  p1: null,
+  hoverP: null,
+  rectStart: null,
+  rectDrawing: false,
+  strength: 12,
+  selIdx: null,        // index of selected region (for editing)
+  dragging: null,      // {idx, type:'move'|'resize', startX,startY, orig:{...}}
+};
+
+// Convert a region's canvas-space cx/cy/w/h into image-relative fractions (for locking)
+// Get the canvas rect {dx,dy,dw,dh} for a given image/cell context
+// In multi mode: uses the cell dimensions. In single mode: uses fgRect.
+function getImageRect(miImgIdx){
+  if(appMode==='multi' && MI.cells.length && miImgIdx!==undefined && miImgIdx!==null){
+    const cell = MI.cells[miImgIdx];
+    const imgData = MI.images[miImgIdx];
+    if(!cell || !imgData) return null;
+    // Cell bounds in canvas pixels
+    const ix=cell.x*DW, iy=cell.y*DH, iw=cell.w*DW, ih=cell.h*DH;
+    // Replicate drawImgIntoRect logic to get actual drawn image position
+    const src = imgData.img;
+    const zf = imgData.zoom / 100;
+    const scale = Math.min(iw/src.width, ih/src.height) * zf;
+    const diw = src.width * scale;
+    const dih = src.height * scale;
+    const panX = (imgData.panX/100 - 0.5) * iw;
+    const panY = (imgData.panY/100 - 0.5) * ih;
+    const dix = ix + (iw - diw)/2 + panX;
+    const diy = iy + (ih - dih)/2 + panY;
+    return { dx: dix, dy: diy, dw: diw, dh: dih };
+  }
+  return fgRect(DW,DH);
+}
+
+// Find which image (by its position in MI.images) is shown in the cell that contains px,py
+// Returns the MI.images index (not cell index) so it survives swaps
+function getImageIdxAtPoint(px,py){
+  if(appMode==='multi' && MI.cells.length){
+    const ci = getMiCell(px,py);
+    if(ci!==null && MI.images[ci]) return ci; // ci IS the images index (same array order)
+  }
+  return null; // single mode — blur locks to the one fgImg
+}
+
+// Store position as fraction of the image rect (for locking)
+function regionToImageRel(r){
+  // In multi mode: use selected panel (MI.selIdx) if available — more reliable than
+  // hit-testing the blur centre which may fall outside a circle's radius
+  let miIdx = null;
+  if(appMode==='multi'){
+    if(MI.selIdx!==null && MI.images[MI.selIdx]){
+      miIdx = MI.selIdx; // trust the selected panel
+    } else {
+      miIdx = getImageIdxAtPoint(r.cx, r.cy); // fallback
+    }
+  }
+  const fr = getImageRect(miIdx);
+  if(!fr || fr.dw<=0 || fr.dh<=0) return null;
+  return {
+    rx: (r.cx - fr.dx) / fr.dw,
+    ry: (r.cy - fr.dy) / fr.dh,
+    rw: r.w / fr.dw,
+    rh: r.h / fr.dh,
+    miImgId: (appMode==='multi' && miIdx!==null && MI.images[miIdx])
+              ? MI.images[miIdx].id
+              : null,
+  };
+}
+
+// Compute current canvas cx/cy/w/h from stored relative values
+function imageRelToRegion(r){
+  let fr;
+  if(appMode==='multi' && r.miImgId!==undefined && r.miImgId!==null){
+    const ci = MI.images.findIndex(img=>img.id===r.miImgId);
+    fr = ci>=0 ? getImageRect(ci) : null;
+    if(!fr) return; // image deleted, can't recompute
+  } else if(appMode==='single'){
+    fr = fgRect(DW,DH);
+    if(!fr) return;
+  } else {
+    return; // multi mode but no miImgId — don't recompute
+  }
+  r.cx = fr.dx + r.relX * fr.dw;
+  r.cy = fr.dy + r.relY * fr.dh;
+  r.w  = r.relW * fr.dw;
+  r.h  = r.relH * fr.dh;
+}
+
+// Update all locked regions every render
+function updateLockedBlurs(){
+  BLUR.regions.forEach(r=>{
+    if(r.locked && r.relX!==undefined) imageRelToRegion(r);
+  });
+}
+
+// Apply a pixelate+blur effect inside an arbitrary rotated rect/oval region
+
+// Hit test: is point inside region's rotated shape?
+function blurHitTest(px,py,r){
+  const dx=px-r.cx, dy=py-r.cy;
+  const cos=Math.cos(-r.angle||0), sin=Math.sin(-r.angle||0);
+  const lx = dx*cos - dy*sin;
+  const ly = dx*sin + dy*cos;
+  if(r.type==='face'){
+    return (lx*lx)/((r.w/2)*(r.w/2)) + (ly*ly)/((r.h/2)*(r.h/2)) <= 1;
+  }
+  return Math.abs(lx)<=r.w/2 && Math.abs(ly)<=r.h/2;
+}
+
+function getBlurRegionAt(px,py){
+  for(let i=BLUR.regions.length-1;i>=0;i--){
+    if(blurHitTest(px,py,BLUR.regions[i])) return i;
+  }
+  return null;
+}
+
+// Get resize handle position (bottom-right corner of rotated shape, in canvas space)
+function blurHandlePos(r){
+  const cos=Math.cos(r.angle||0), sin=Math.sin(r.angle||0);
+  const lx=r.w/2, ly=r.h/2;
+  return { x: r.cx + lx*cos - ly*sin, y: r.cy + lx*sin + ly*cos };
+}
+
+function distTo(px,py,x,y){ return Math.hypot(px-x,py-y); }
+
+
+// Draw blur regions that belong to a specific cell image, clipped to the cell boundaries
+function renderBlurForCell(targetCtx, cellIdx, cellDx, cellDy, cellDw, cellDh){
+  if(!BLUR.regions.length) return;
+  const img = MI.images[cellIdx];
+  if(!img) return;
+  BLUR.regions.forEach(r=>{
+    // A blur belongs to this cell if:
+    // - it's locked to this image (r.miImgId === img.id), OR
+    // - it's unlocked and its centre falls within this cell's canvas rect
+    const belongsHere = r.locked
+      ? (r.miImgId === img.id)
+      : (r.cx >= cellDx && r.cx <= cellDx+cellDw && r.cy >= cellDy && r.cy <= cellDy+cellDh);
+    if(!belongsHere) return;
+
+    // Clip to cell before applying blur so it can't bleed into adjacent panels
+    targetCtx.save();
+    targetCtx.beginPath();
+    targetCtx.rect(cellDx, cellDy, cellDw, cellDh);
+    targetCtx.clip();
+    blurApply(targetCtx, r, BLUR.strength);
+    targetCtx.restore();
+  });
+}
+
+// Check if a region already belongs to a specific multi-image cell
+function blurBelongsToCell(r, cellIdx){
+  const img = MI.images[cellIdx];
+  if(!img) return false;
+  if(r.locked) return r.miImgId === img.id;
+  const cell = MI.cells[cellIdx];
+  if(!cell) return false;
+  return r.cx >= cell.x*DW && r.cx <= (cell.x+cell.w)*DW &&
+         r.cy >= cell.y*DH && r.cy <= (cell.y+cell.h)*DH;
+}
+function blurApply(ctx, region, strength){
+  const {cx,cy,w,h,angle,type} = region;
+  if(w<2||h<2) return;
+  const size = Math.max(2, Math.round(strength));
+
+  const diag = Math.sqrt(w*w+h*h);
+  const bx = Math.max(0, Math.round(cx-diag/2));
+  const by = Math.max(0, Math.round(cy-diag/2));
+  const bw = Math.min(ctx.canvas.width-bx,  Math.round(diag));
+  const bh = Math.min(ctx.canvas.height-by, Math.round(diag));
+  if(bw<2||bh<2) return;
+
+  const offCv=document.createElement('canvas');
+  offCv.width=Math.max(1,Math.round(bw/size));
+  offCv.height=Math.max(1,Math.round(bh/size));
+  const offCtx=offCv.getContext('2d');
+  offCtx.drawImage(ctx.canvas, bx,by,bw,bh, 0,0, offCv.width, offCv.height);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.translate(cx,cy);
+  ctx.rotate(angle||0);
+  if(type==='face'){ ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); }
+  else { ctx.rect(-w/2,-h/2,w,h); }
+  ctx.closePath();
+  ctx.clip();
+  ctx.imageSmoothingEnabled=false;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.drawImage(offCv,0,0,offCv.width,offCv.height, bx,by,bw,bh);
+  ctx.filter=`blur(${Math.max(1,Math.round(size/3))}px)`;
+  ctx.drawImage(offCv,0,0,offCv.width,offCv.height, bx,by,bw,bh);
+  ctx.filter='none';
+  ctx.restore();
+}
+
+function renderBlurRegions(targetCtx){
+  BLUR.regions.forEach(r=>blurApply(targetCtx, r, BLUR.strength));
+}
+
+function renderBlurUI(){
+  BLUR.regions.forEach((r,i)=>{
+    const isSel = BLUR.selIdx===i;
+    ictx.save();
+    ictx.translate(r.cx,r.cy); ictx.rotate(r.angle||0);
+    ictx.strokeStyle = isSel ? 'rgba(71,0,163,.9)' : 'rgba(220,38,38,.6)';
+    ictx.lineWidth = isSel ? 2 : 1.5;
+    ictx.setLineDash(isSel ? [] : [4,3]);
+    ictx.beginPath();
+    if(r.type==='face') ictx.ellipse(0,0,r.w/2,r.h/2,0,0,Math.PI*2);
+    else ictx.rect(-r.w/2,-r.h/2,r.w,r.h);
+    ictx.stroke();
+    ictx.restore();
+
+    // Lock badge
+    if(r.locked){
+      ictx.save();
+      ictx.font='11px sans-serif';
+      ictx.fillStyle='rgba(0,0,0,.55)';
+      ictx.beginPath(); ictx.arc(r.cx-r.w/2+2, r.cy-r.h/2+2, 8, 0, Math.PI*2); ictx.fill();
+      ictx.fillStyle='#fff';
+      ictx.textAlign='center'; ictx.textBaseline='middle';
+      ictx.fillText('🔒', r.cx-r.w/2+2, r.cy-r.h/2+3);
+      ictx.restore();
+    }
+
+    // Resize handle + selection outline for the selected region
+    if(isSel && !r.locked){
+      const hp=blurHandlePos(r);
+      ictx.save();
+      ictx.fillStyle='#4700A3'; ictx.strokeStyle='#fff'; ictx.lineWidth=1.5;
+      ictx.beginPath(); ictx.arc(hp.x,hp.y,7,0,Math.PI*2); ictx.fill(); ictx.stroke();
+      // Arrows to hint resize
+      ictx.fillStyle='#fff'; ictx.font='bold 8px sans-serif';
+      ictx.textAlign='center'; ictx.textBaseline='middle';
+      ictx.fillText('⤡',hp.x,hp.y);
+      ictx.restore();
+      // Small rotation arc hint above the handle
+      ictx.save();
+      ictx.strokeStyle='rgba(71,0,163,.5)'; ictx.lineWidth=1.5; ictx.setLineDash([2,2]);
+      ictx.beginPath(); ictx.arc(hp.x,hp.y,12, -Math.PI*0.8, -Math.PI*0.2);
+      ictx.stroke();
+      // Arrow head on the arc
+      ictx.setLineDash([]);
+      ictx.save(); ictx.translate(hp.x+12*Math.cos(-Math.PI*0.2), hp.y+12*Math.sin(-Math.PI*0.2));
+      ictx.rotate(-Math.PI*0.2 + Math.PI/2);
+      ictx.beginPath(); ictx.moveTo(0,-3); ictx.lineTo(2,1); ictx.lineTo(-2,1); ictx.closePath();
+      ictx.fillStyle='rgba(71,0,163,.5)'; ictx.fill();
+      ictx.restore();
+      ictx.restore();
+    }
+  });
+
+  if(BLUR.mode && BLUR.clickStage===1 && BLUR.p1 && BLUR.hoverP){
+    const preview = computeRegion(BLUR.mode, BLUR.p1, BLUR.hoverP);
+    if(preview){
+      ictx.save();
+      ictx.translate(preview.cx,preview.cy); ictx.rotate(preview.angle||0);
+      ictx.strokeStyle='rgba(220,38,38,.9)'; ictx.lineWidth=2; ictx.setLineDash([5,4]);
+      ictx.fillStyle='rgba(220,38,38,.08)';
+      ictx.beginPath();
+      if(preview.type==='face') ictx.ellipse(0,0,preview.w/2,preview.h/2,0,0,Math.PI*2);
+      else ictx.rect(-preview.w/2,-preview.h/2,preview.w,preview.h);
+      ictx.fill(); ictx.stroke();
+      ictx.restore();
+    }
+    ictx.save();
+    ictx.fillStyle='#dc2626';
+    ictx.beginPath(); ictx.arc(BLUR.p1.x,BLUR.p1.y,3,0,Math.PI*2); ictx.fill();
+    ictx.restore();
+  }
+
+  if(BLUR.mode==='rect' && BLUR.rectDrawing && BLUR.rectStart && BLUR.hoverP){
+    const x=Math.min(BLUR.rectStart.x,BLUR.hoverP.x), y=Math.min(BLUR.rectStart.y,BLUR.hoverP.y);
+    const w=Math.abs(BLUR.hoverP.x-BLUR.rectStart.x), h=Math.abs(BLUR.hoverP.y-BLUR.rectStart.y);
+    ictx.save();
+    ictx.strokeStyle='rgba(220,38,38,.9)'; ictx.lineWidth=2; ictx.setLineDash([5,4]);
+    ictx.fillStyle='rgba(220,38,38,.08)';
+    ictx.fillRect(x,y,w,h); ictx.strokeRect(x,y,w,h);
+    ictx.restore();
+  }
+}
+
+function computeRegion(mode,p1,p2){
+  const dx=p2.x-p1.x, dy=p2.y-p1.y;
+  const len=Math.hypot(dx,dy);
+  if(len<3) return null;
+  const angle=Math.atan2(dy,dx);
+  const cx=(p1.x+p2.x)/2, cy=(p1.y+p2.y)/2;
+
+  if(mode==='plate'){
+    const ratio=4.3;
+    const h=len/Math.sqrt(1+ratio*ratio);
+    const w=h*ratio;
+    return {type:'plate', cx,cy, w,h, angle};
+  }
+
+  if(mode==='face'){
+    const h=len*1.15;
+    const w=h*0.72;
+    const faceAngle=angle-Math.PI/2;
+    return {type:'face', cx,cy, w,h, angle:faceAngle};
+  }
+
+  return null;
+}
+
+function buildBlurList(){
+  const list=document.getElementById('blurList'); list.innerHTML='';
+  document.getElementById('blurClearBtn').style.display=BLUR.regions.length?'block':'none';
+  BLUR.regions.forEach((r,i)=>{
+    const isSel = BLUR.selIdx===i;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 7px;border:1.5px solid '+(isSel?'var(--p)':'var(--bd)')+';border-radius:5px;background:'+(isSel?'rgba(71,0,163,.06)':'var(--p2)')+';font-size:.65rem;color:var(--mu);cursor:pointer;';
+    row.addEventListener('click',(ev)=>{
+      if(ev.target.tagName==='BUTTON') return;
+      BLUR.selIdx = isSel ? null : i;
+      buildBlurList(); render();
+    });
+
+    const icon=document.createElement('span');
+    icon.textContent = r.type==='face' ? '😶' : r.type==='plate' ? '🚗' : '▭';
+    icon.style.flexShrink='0';
+    row.appendChild(icon);
+
+    const lbl=document.createElement('span');
+    lbl.style.flex='1';
+    lbl.textContent = (r.type==='face'?'Face':r.type==='plate'?'Number plate':'Area') + ` ${i+1}`;
+    row.appendChild(lbl);
+
+    // Lock toggle
+    const lockBtn=document.createElement('button');
+    lockBtn.textContent = r.locked ? '🔒' : '🔓';
+    lockBtn.title = r.locked ? 'Unlock (currently follows the image)' : 'Lock to image position';
+    lockBtn.style.cssText='border:none;background:none;cursor:pointer;font-size:.78rem;padding:0 3px;opacity:'+(r.locked?'1':'.5')+';';
+    lockBtn.addEventListener('click',(ev)=>{
+      ev.stopPropagation();
+      if(!r.locked){
+        // Lock: store current position as a fraction of the image rect
+        const rel=regionToImageRel(r);
+        if(rel){
+          r.relX=rel.rx; r.relY=rel.ry; r.relW=rel.rw; r.relH=rel.rh;
+          r.miImgId=rel.miImgId; // which image this blur belongs to (for multi swap tracking)
+          r.locked=true;
+        }
+      } else {
+        r.locked=false;
+      }
+      buildBlurList(); render();
+    });
+    row.appendChild(lockBtn);
+
+    const del=document.createElement('button');
+    del.textContent='✕';
+    del.style.cssText='border:none;background:none;cursor:pointer;color:#ccc;font-size:.75rem;';
+    del.onmouseover=()=>del.style.color='#c0392b';
+    del.onmouseout=()=>del.style.color='#ccc';
+    del.addEventListener('click',(ev)=>{
+      ev.stopPropagation();
+      BLUR.regions.splice(i,1);
+      if(BLUR.selIdx===i) BLUR.selIdx=null;
+      else if(BLUR.selIdx>i) BLUR.selIdx--;
+      buildBlurList();render();
+    });
+    row.appendChild(del);
+
+    list.appendChild(row);
+  });
+}
+
+function setBlurMode(mode){
+  if(BLUR.mode===mode){
+    BLUR.mode=null; BLUR.clickStage=0; BLUR.p1=null; BLUR.rectDrawing=false;
+  } else {
+    BLUR.mode=mode; BLUR.clickStage=0; BLUR.p1=null; BLUR.rectDrawing=false;
+  }
+  ['blurFaceBtn','blurPlateBtn','blurRectBtn'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  const hint=document.getElementById('blurHint');
+  if(BLUR.mode==='face'){
+    document.getElementById('blurFaceBtn').classList.add('active');
+    hint.style.display='block';
+    hint.textContent='Click the forehead, then click the chin. An oval will blur the face.';
+  } else if(BLUR.mode==='plate'){
+    document.getElementById('blurPlateBtn').classList.add('active');
+    hint.style.display='block';
+    hint.textContent='Click the top-left corner of the plate, then the bottom-right corner.';
+  } else if(BLUR.mode==='rect'){
+    document.getElementById('blurRectBtn').classList.add('active');
+    hint.style.display='block';
+    hint.textContent='Click and drag to draw a rectangle over the area to blur.';
+  } else {
+    hint.style.display='none';
+  }
+  interCv.style.cursor=BLUR.mode?'crosshair':'default';
+  render();
+}
+
+document.getElementById('blurFaceBtn').addEventListener('click',()=>setBlurMode('face'));
+document.getElementById('blurPlateBtn').addEventListener('click',()=>setBlurMode('plate'));
+document.getElementById('blurRectBtn').addEventListener('click',()=>setBlurMode('rect'));
+
+document.getElementById('blurStrengthSlider').addEventListener('input',function(){
+  BLUR.strength=+this.value;
+  document.getElementById('blurStrengthVal').textContent=this.value;
+  render();
+});
+
+document.getElementById('blurClearBtn').addEventListener('click',()=>{
+  BLUR.regions=[]; buildBlurList(); render();
+});
+
+interCv.addEventListener('mousedown',e=>{
+  const p=cpos(e);
+
+  // If not actively placing a new blur, check for select/drag/resize on existing regions
+  if(!BLUR.mode || BLUR.clickStage===0){
+    // Check resize handle on selected region first
+    if(BLUR.selIdx!==null && BLUR.regions[BLUR.selIdx] && !BLUR.regions[BLUR.selIdx].locked){
+      const r=BLUR.regions[BLUR.selIdx];
+      const hp=blurHandlePos(r);
+      if(distTo(p.x,p.y,hp.x,hp.y)<10){
+        e.stopImmediatePropagation();
+        BLUR.dragging={idx:BLUR.selIdx, type:'resize', startX:p.x, startY:p.y, orig:{w:r.w,h:r.h,angle:r.angle||0, cx:r.cx, cy:r.cy}};
+        return;
+      }
+    }
+    // Check if clicking inside any region (to select/move)
+    const hitIdx=getBlurRegionAt(p.x,p.y);
+    if(hitIdx!==null){
+      e.stopImmediatePropagation();
+      BLUR.selIdx=hitIdx;
+      buildBlurList();
+      const r=BLUR.regions[hitIdx];
+      if(!r.locked){
+        BLUR.dragging={idx:hitIdx, type:'move', startX:p.x, startY:p.y, origCx:r.cx, origCy:r.cy};
+      }
+      render();
+      return;
+    } else if(!BLUR.mode){
+      // Clicked empty space with no tool active - deselect
+      if(BLUR.selIdx!==null){ BLUR.selIdx=null; buildBlurList(); render(); }
+    }
+  }
+
+  if(!BLUR.mode) return;
+
+  e.stopImmediatePropagation();
+
+  if(BLUR.mode==='rect'){
+    BLUR.rectDrawing=true; BLUR.rectStart=p; BLUR.hoverP=p;
+    return;
+  }
+
+  if(BLUR.clickStage===0){
+    BLUR.p1=p; BLUR.clickStage=1; BLUR.hoverP=p;
+    render();
+  } else {
+    const region=computeRegion(BLUR.mode,BLUR.p1,p);
+    if(region){
+      region.locked=false;
+      BLUR.regions.push(region);
+      BLUR.selIdx=BLUR.regions.length-1;
+    }
+    BLUR.clickStage=0; BLUR.p1=null; BLUR.hoverP=null;
+    buildBlurList(); render();
+  }
+},true);
+
+window.addEventListener('mousemove',e=>{
+  const p=cpos(e);
+
+  if(BLUR.dragging){
+    const d=BLUR.dragging;
+    const r=BLUR.regions[d.idx];
+    if(!r){ BLUR.dragging=null; return; }
+    if(d.type==='move'){
+      r.cx = d.origCx + (p.x-d.startX);
+      r.cy = d.origCy + (p.y-d.startY);
+    } else if(d.type==='resize'){
+      if(e.shiftKey){
+        // Shift + drag handle = rotate
+        // Angle from region centre to current mouse position
+        const newAngle = Math.atan2(p.y - r.cy, p.x - r.cx);
+        // Angle from region centre to the handle was: atan2(orig handle direction)
+        // Orig handle was at angle (orig.angle) from centre, pointing to bottom-right corner
+        const origHandleAngle = (d.orig.angle||0) + Math.PI/4; // approx corner direction
+        const origMouseAngle  = Math.atan2(d.startY - r.cy, d.startX - r.cx);
+        r.angle = (d.orig.angle||0) + (newAngle - origMouseAngle);
+      } else {
+        // Normal resize: project mouse onto region's local axes
+        const cos=Math.cos(-(r.angle||0)), sin=Math.sin(-(r.angle||0));
+        const dx=p.x-r.cx, dy=p.y-r.cy;
+        const lx=dx*cos-dy*sin, ly=dx*sin+dy*cos;
+        r.w=Math.max(10, Math.abs(lx)*2);
+        r.h=Math.max(10, Math.abs(ly)*2);
+      }
+    }
+    render();
+    return;
+  }
+
+  if(!BLUR.mode) return;
+  BLUR.hoverP=p;
+  if(BLUR.mode==='rect'&&BLUR.rectDrawing){ render(); return; }
+  if(BLUR.clickStage===1){ render(); }
+},true);
+
+window.addEventListener('mouseup',e=>{
+  if(BLUR.dragging){ BLUR.dragging=null; return; }
+
+  if(BLUR.mode!=='rect'||!BLUR.rectDrawing) return;
+  BLUR.rectDrawing=false;
+  const p=cpos(e);
+  const cx=(BLUR.rectStart.x+p.x)/2, cy=(BLUR.rectStart.y+p.y)/2;
+  const w=Math.abs(p.x-BLUR.rectStart.x), h=Math.abs(p.y-BLUR.rectStart.y);
+  if(w>6&&h>6){
+    BLUR.regions.push({type:'rect',cx,cy,w,h,angle:0,locked:false});
+    BLUR.selIdx=BLUR.regions.length-1;
+    buildBlurList();
+  }
+  BLUR.rectStart=null; BLUR.hoverP=null;
+  render();
+},true);
+
+
+function toggleBlurSection(){
+  const body = document.getElementById('blurBody');
+  const toggle = document.getElementById('blurToggle');
+  const arrow = document.getElementById('blurArrow');
+  const open = body.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+  arrow.textContent = open ? '▴' : '▾';
+}
 syncSize();
 </script>
 </body>
