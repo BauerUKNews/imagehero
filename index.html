@@ -849,7 +849,7 @@ function drawVig(c,cw,ch,str,dir){
 // ══════════════════════════════════════════════════════════════
 // MULTI IMAGE
 // ══════════════════════════════════════════════════════════════
-function drawMulti(c,cw,ch){
+function drawMulti(c,cw,ch,isExport){
   if(!MI.images.length||!MI.cells.length)return;
   MI.cells.forEach((cell,i)=>{
     const img=MI.images[i]; if(!img)return;
@@ -892,8 +892,8 @@ function drawMulti(c,cw,ch){
       drawImgIntoRect(dx,dy,dw,dh);
       c.restore();
 
-      // Selection ring
-      if(MI.selIdx===i){
+      // Selection ring (preview only — never baked into export)
+      if(!isExport && MI.selIdx===i){
         c.save();
         c.strokeStyle='rgba(71,0,163,.9)'; c.lineWidth=2.5;
         c.beginPath(); c.arc(cx,cy,r+bw+1,0,Math.PI*2); c.stroke();
@@ -905,9 +905,12 @@ function drawMulti(c,cw,ch){
       c.beginPath(); c.rect(dx,dy,dw,dh); c.clip();
       drawImgIntoRect(dx,dy,dw,dh);
       c.restore();
-      c.strokeStyle=MI.selIdx===i?'rgba(71,0,163,.9)':'rgba(255,255,255,.6)';
-      c.lineWidth=MI.selIdx===i?2.5:1;
-      c.strokeRect(dx+.5,dy+.5,dw-1,dh-1);
+      // Cell divider / selection outline (preview only — never baked into export)
+      if(!isExport){
+        c.strokeStyle=MI.selIdx===i?'rgba(71,0,163,.9)':'rgba(255,255,255,.6)';
+        c.lineWidth=MI.selIdx===i?2.5:1;
+        c.strokeRect(dx+.5,dy+.5,dw-1,dh-1);
+      }
     }
   });
 }
@@ -1455,7 +1458,7 @@ function doExport(){
     ec.drawImage(S.fgImg,0,0,S.fgImg.width,S.fgImg.height,dr.dx*(EW/DW),dr.dy*(EH/DH),dr.dw*(EW/DW),dr.dh*(EH/DH));
   }
   // Multi
-  drawMulti(ec,EW,EH);
+  drawMulti(ec,EW,EH,true);
   // Blur regions at export resolution
   const scaleX=EW/DW, scaleY=EH/DH;
   const expStrength=Math.round(BLUR.strength*((scaleX+scaleY)/2));
